@@ -8,8 +8,11 @@ require 'pp'
 require 'tidy'
 require 'uri'
 
-samples_path = '../samples/index.html'
-File.open(samples_path, "w")
+all_path = '../samples/index.html'
+File.open(all_path, "w")
+
+debug_path = '../samples/debug.html'
+File.open(debug_path, "w")
 
 DEBUG = true
 
@@ -22,7 +25,7 @@ unless DEBUG
     file_url = "file://#{File.expand_path(f)}"
     txmt_url = "txmt://open/?url=#{file_url}"
   
-    File.open(samples_path, 'a') do |f|
+    File.open(all_path, 'a') do |f|
       f << "<div>\n"
       f << "\n<h2>#{net.title} &mdash; #{bname}</h2>\n"
       f << %(\n<p style="font-size:92%;color:#666"><a href="#{txmt_url}">Textmate</a> <a target="_blank" href="#{file_url}">Open</a></p>\n)
@@ -33,7 +36,7 @@ unless DEBUG
     end
   end
 else
-  %w(ff9dd0b9a.html).each do |f|
+  %w(001a50736.html).each do |f|
   f = "/Users/justin/dev/me/ruby/sherlock/data/#{f}"
 
   bname = File.basename(f)
@@ -43,7 +46,7 @@ else
   file_url = "file://#{File.expand_path(f)}"
   txmt_url = "txmt://open/?url=#{file_url}"
 
-  File.open(samples_path, 'a') do |f|
+  File.open(debug_path, 'a') do |f|
     f << "<div>\n"
     f << "\n<h2>#{net.title} &mdash; #{bname}</h2>\n"
     f << %(\n<p style="font-size:92%;color:#666"><a href="#{txmt_url}">Textmate</a> <a target="_blank" href="#{file_url}">Open</a></p>\n)

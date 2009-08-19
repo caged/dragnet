@@ -102,10 +102,14 @@ module Dragnet
     end
     
     def build_score(parent, element)
+      ancestors = parent.ancestors
       score = parent.content_score
       klasses = parent['class'].split(' ').collect {|c| c.downcase} rescue []
-      id      = parent['id'].downcase rescue nil
+      ancestor_classes = ancestors.collect {|c| c['class'] ? c['class'].split(' ') : nil }.flatten.uniq.compact
+      ancestor_ids = ancestors.collect {|c| c['id'] ? c['id'].split(' ') : nil }.flatten.uniq.compact
+      id = parent['id'].downcase rescue nil
       
+      pp ancestor_classes
       # Two points for every strong keyword
       STRONG_KEYWORDS.each do |keyword|
         score += 2 if klasses.include?(keyword)
