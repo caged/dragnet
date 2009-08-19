@@ -128,10 +128,13 @@ module Dragnet
       IGNORE_KEYWORDS.each do |keyword|
         score -= CONTROL_SCORE if klasses.include?(keyword)
         score -= CONTROL_SCORE if id && id.include?(keyword)
+        score -= CONTROL_SCORE if ancestor_ids.include?(keyword)
+        score -= CONTROL_SCORE if ancestor_classes.include?(keyword)
         
         # There wasn't an exact match, but we might have something like 
         # comment-1234 we'll take off half the control score
-        klasses.each do |klass|
+        all_keywords = (klasses + ancestor_classes + ancestor_ids)
+        all_keywords.each do |klass|
           score -= (CONTROL_SCORE - 10) if klass.include?(keyword)
         end
       end
