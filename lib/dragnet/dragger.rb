@@ -8,35 +8,44 @@ end
 
 module Dragnet
   class Dragger
-    STRONG_KEYWORDS = %w(article body content entry hentry post story text post-entry post-body)
-    MEDIUM_KEYWORDS = %w(area container inner main)
-    IGNORE_KEYWORDS = %w(ad captcha classified comment footer footnote leftcolumn listing menu meta module nav navbar rightcolumn sidebar sbar sponsor tab toolbar tools trackback widget)
+    STRONG_KEYWORDS = %w(article body content entry hentry post story text post-entry 
+                        post-body blogpost entry-body page-post postcontent)
+    MEDIUM_KEYWORDS = %w(area container inner main story)
+    IGNORE_KEYWORDS = %w(ad captcha classified comment footer footnote leftcolumn 
+                        listing menu meta module nav navbar rightcolumn sidebar sbar 
+                        sponsor tab toolbar tools trackback widget trail right-column
+                        toolbox reply comnt)
+    INVALID_ELEMENTS = %w(form object iframe h1 script style embed param)
     CONTROL_SCORE = 20
-    INVALID_ELEMENTS = %w(form object iframe h1)
+    
+    attr_reader :content
+    attr_reader :links
+    attr_reader :author
+    attr_reader :title
     
     def self.drag!(html)
-      new(html).parse!
+      new(html)
     end
     
     def initialize(html)
       html.gsub!(/(<br\s*[^>]*>\n*){2,}/i, "<p />")
+      #html.gsub!(/↓+|—+/i, '')
+      
+      # Tidy.path = '/opt/local/lib/libtidy-0.99.0.dylib'
+      # Tidy.open(:show_warnings => true) do |tidy|
+      #   tidy.options.output_xhtml = true
+      #   tidy.options.enclose_text = true
+      #   tidy.options.enclose_block_text = true
+      #   tidy.options.numeric_entities = true
+      #   html = tidy.clean(html)
+      #   # puts tidy.errors
+      # end
+
       @doc = Nokogiri::HTML(html)
-      # 
-      # @doc.at('p#foo').children.each do |p|
-      #   if p.is_a?(Nokogiri::XML::Text)
-      #     puts p.content
-      #   end
-      # end
-      # 
-      # @doc.xpath("//p//p").each do |par|
-      #   paragraph_in_paragraph = par.ancestors.detect {|a| a.name.downcase == 'p'}
-      #   if paragraph_in_paragraph
-      #     paragraph_in_paragraph.name = 'div'          
-      #     pp paragraph_in_paragraph.attributes
-      #   end
-      # end
-      puts @doc.at('//title').content
+      @title = @doc.at('//title').content rescue nil
+      @links = []
       @high_score = -1
+      parse!
     end
     
     def parse!
@@ -44,8 +53,9 @@ module Dragnet
       content_containers = []
       paragraphs = @doc.xpath('//p').to_a
       paragraphs = @doc.xpath('//div').to_a if paragraphs.size == 0
+      paragraphs + @doc.xpath('//blockquote').to_a
       paragraphs + @doc.children.collect {|c| c.is_a?(Nokogiri::XML::Text) }
-      
+
       paragraphs.each do |par|
         parent = par.parent
         parent.content_score = 0 if parent.content_score.nil?
@@ -73,16 +83,25 @@ module Dragnet
       
       content_containers.each do |container|
         unless INVALID_ELEMENTS.include?(container.name.downcase)
+          container.css('a').each do |link|
+            href = link['href']
+            if href && !href.nil? || !href.empty?
+              url = URI.parse(href)
+              unless url.host.nil?
+                @links << {:text => link.content, :href => href}
+              end
+            end
+          end rescue nil
+          
           cleaned_content = container.content.gsub(/[\r\n\t]+/i, '')
-          content << cleaned_content.gsub(/\s{3,}/, '').gsub(/<\/?[^>]*>/, " ").gsub(']]>', ' ')
+          content << cleaned_content.gsub(/\s{3,}/, '').gsub(/<\/?[^>]*>/, " ").gsub(']]>', ' ').gsub(/↓|—/, '')
         end
       end
       
-      content.join
+      @content = content.join
     end
     
     def build_score(parent, element)
-      puts "SELF:#{element['id']} PARENT:#{parent['id']} SCORE:#{parent.content_score}"
       score = parent.content_score
       klasses = parent['class'].split(' ').collect {|c| c.downcase} rescue []
       id      = parent['id'].downcase rescue nil
@@ -105,6 +124,12 @@ module Dragnet
       IGNORE_KEYWORDS.each do |keyword|
         score -= CONTROL_SCORE if klasses.include?(keyword)
         score -= CONTROL_SCORE if id && id.include?(keyword)
+        
+        # There wasn't an exact match, but we might have something like 
+        # comment-1234 we'll take off half the control score
+        klasses.each do |klass|
+          score -= (CONTROL_SCORE - 10) if klass.include?(keyword)
+        end
       end
     
       score += 1 if element.name == 'p'
