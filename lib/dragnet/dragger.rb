@@ -9,12 +9,12 @@ end
 module Dragnet
   class Dragger
     STRONG_KEYWORDS = %w(article body content entry hentry post story text post-entry 
-                        post-body blogpost entry-body page-post postcontent)
+                        post-body blogpost entry-body page-post postcontent pbody)
     MEDIUM_KEYWORDS = %w(area container inner main story)
     IGNORE_KEYWORDS = %w(ad captcha classified comment footer footnote leftcolumn 
-                        listing menu meta module nav navbar rightcolumn sidebar sbar 
+                        listing menu module nav navbar rightcolumn sidebar sbar 
                         sponsor tab toolbar tools trackback widget trail right-column
-                        toolbox reply comnt)
+                        toolbox reply comnt addstrip)
     INVALID_ELEMENTS = %w(form object iframe h1 script style embed param)
     CONTROL_SCORE = 20
     
