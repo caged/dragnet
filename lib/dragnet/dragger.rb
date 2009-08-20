@@ -109,7 +109,9 @@ module Dragnet
       ancestor_ids = ancestors.collect {|c| c['id'] ? c['id'].split(' ') : nil }.flatten.uniq.compact
       id = parent['id'].downcase rescue nil
       
-      pp ancestor_classes
+      # For every paragraph sibling, up the score.
+      score += parent.css('p').size
+      
       # Two points for every strong keyword
       STRONG_KEYWORDS.each do |keyword|
         score += 2 if klasses.include?(keyword)
@@ -135,7 +137,7 @@ module Dragnet
         # comment-1234 we'll take off half the control score
         all_keywords = (klasses + ancestor_classes + ancestor_ids)
         all_keywords.each do |klass|
-          score -= (CONTROL_SCORE - 10) if klass.include?(keyword)
+          score -= CONTROL_SCORE if klass.include?(keyword)
         end
       end
     
