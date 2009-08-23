@@ -5,8 +5,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "dragnet"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = %Q{Extracts readable content from a page}
+    gem.description = %Q{Given a url Dragnet will attempt to analyze and extract the intended readable content and embedded links from a page}
     gem.email = "justin@activereload.net"
     gem.homepage = "http://github.com/Caged/dragnet"
     gem.authors = ["Caged"]
