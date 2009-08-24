@@ -9,12 +9,12 @@ end
 module Dragnet
   class Dragger
     STRONG_KEYWORDS = %w(blog article body content entry hentry post story text post-entry 
-                        post-body blogpost entry-body page-post postcontent pbody article-text)
+                        post-body entry-content blogpost entry-body page-post postcontent pbody article-text)
     MEDIUM_KEYWORDS = %w(area container inner main story)
     IGNORE_KEYWORDS = %w(captcha classified comment footer footnote listing menu module 
                         nav navbar sidebar sbar sponsor tab toolbar tools trackback widget trail
                         toolbox reply comnt addstrip comments)
-    INVALID_ELEMENTS = %w(form object iframe h1 script style embed param)
+    INVALID_ELEMENTS = %w(form link head object iframe h1 script style embed param)
     CONTROL_SCORE = 20
     
     DEBUG = false
@@ -49,25 +49,32 @@ module Dragnet
     end
     
     def parse!
+      # First try to extract the content as a microformat
+      @content = parse_as_microformat(@doc)
+      unless @content.nil?
+        @links = extract_links_from_content(@content)
+        return
+      end
+      
       content = []
       content_containers = []
       
       INVALID_ELEMENTS.each do |ename|
-        @doc.xpath("//#{ename}").each { |e| e.remove }
+        @doc.css(ename).each { |e| e.remove }
       end
-      paragraphs = @doc.xpath('//p').to_a
+      paragraphs = @doc.css('p').to_a
       
       # If we have no paragraphs or the paragraph content we got was empty
       # lets try another method
       empty = paragraphs.collect {|c| c.content.strip}.join('').empty?
       if paragraphs.size == 0 || empty
-        paragraphs = @doc.xpath('//div').to_a
+        paragraphs = @doc.csss('div').to_a
       end
       
-      paragraphs + @doc.xpath('//blockquote').to_a
+      paragraphs + @doc.css('blockquote').to_a
       paragraphs + @doc.children.collect {|c| c.is_a?(Nokogiri::XML::Text) }
       
-      pp paragraphs.first.attributes
+      puts "Paragraphs: #{paragraphs.size}" if DEBUG
       
       paragraphs.each do |par|
         parent = par.parent
@@ -101,39 +108,21 @@ module Dragnet
         end
       end      
       
+      # Remove all content elements with negative values
       content_containers.each do |container|
         container.children.each do |child|
           child.remove if child.content_score && child.content_score <= 0
         end
         
-        container.css('a').each do |link|
-          href = link['href']
-          if (href && !href.nil?) || (href && !href.empty?)
-            begin
-              url = URI.parse(href)
-              unless url.host.nil?
-                @links << {:text => link.content, :href => href}
-              end
-            rescue 
-              
-            end
-          end          
-        end
+        # Extract all the links from what we assume is the content containers
+        @links.concat(extract_links_from_content(container))
         
         cleaned_content = container.content.gsub(/[\r\n\t]+/i, ' ')
         content << cleaned_content.gsub(/\s{3,}/, '').gsub(/<\/?[^>]*>/, ' ').gsub(']]>', ' ').gsub(/↓|—/, ' ')
       end
       
       @content = content.join(' ')
-    end
-    
-    def keyword_collection_for(element)
-      ancestors = element.ancestors
-      @ancestor_klasses ||= ancestors.collect {|c| c['class'] ? c['class'].split(' ') : nil }.flatten.uniq.compact
-      @ancestor_ids ||= ancestors.collect {|c| c['id'] ? c['id'].split(' ') : nil }.flatten.uniq.compact
-      
-      [@ancestor_klasses, @ancestor_ids]
-    end      
+    end  
     
     def build_score(parent, element)
       ancestors = parent.ancestors
@@ -148,7 +137,7 @@ module Dragnet
         score += 1 if klasses =~ /#{keyword}/i
         score += 1 if id && id =~ /#{keyword}/i
         # # For every paragraph sibling, up the score.
-        # score += parent.xpath('//p').size
+        #score += parent.css('p').size
       end
       
       puts "SCORE STRONG:#{score}" if DEBUG && parent.content.include?(DEBUG_CONTENT)
@@ -172,7 +161,6 @@ module Dragnet
         # score -= CONTROL_SCORE if ancestor_ids.include?(keyword)
         # score -= CONTROL_SCORE if ancestor_klasses.include?(keyword)
         
-        #puts "SCORE:#{parent.content_score} #{element.content}" if element.content.include?('balance all accounts')
         # There wasn't an exact match, but we might have something like 
         # comment-1234 we'll take off half the control score
         # all_keywords = (klasses + ancestor_klasses + ancestor_ids)
@@ -195,5 +183,40 @@ module Dragnet
       @high_score = score if score > @high_score
       score
     end
+    
+    private
+    
+      def parse_as_microformat(doc)
+        hEntry.find(:first, :text => doc.to_s).entry_content rescue nil
+      end
+      
+      def extract_links_from_content(content)
+        links = []
+        content = Nokogiri::HTML.fragment(content) if content.is_a?(String)
+        
+        content.css('a').each do |link|
+          href = link['href']
+          if (href && !href.nil?) || (href && !href.empty?)
+            begin
+              url = URI.parse(href)
+              unless url.host.nil?
+                links << {:text => link.content, :href => href}
+              end
+            rescue 
+              
+            end
+          end          
+        end
+        links
+      end
+    
+      def keyword_collection_for(element)
+        ancestors = element.ancestors
+        @ancestor_klasses ||= ancestors.collect {|c| c['class'] ? c['class'].split(' ') : nil }.flatten.uniq.compact
+        @ancestor_ids ||= ancestors.collect {|c| c['id'] ? c['id'].split(' ') : nil }.flatten.uniq.compact
+      
+        [@ancestor_klasses, @ancestor_ids]
+      end
+    
   end
 end
