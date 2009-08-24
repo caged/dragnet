@@ -17,7 +17,8 @@ module Dragnet
     INVALID_ELEMENTS = %w(form object iframe h1 script style embed param)
     CONTROL_SCORE = 20
     
-    DEBUG_CONTENT = 'Does rooftop'
+    DEBUG = false
+    DEBUG_CONTENT = ''
     
     attr_reader :content
     attr_reader :links
@@ -54,7 +55,6 @@ module Dragnet
       INVALID_ELEMENTS.each do |ename|
         @doc.xpath("//#{ename}").each { |e| e.remove }
       end
-      pp @doc.xpath('//div').size
       paragraphs = @doc.xpath('//p').to_a
       
       # If we have no paragraphs or the paragraph content we got was empty
@@ -74,7 +74,7 @@ module Dragnet
         parent.content_score = 0 if parent.content_score.nil?
         parent.content_score = build_score(parent, par)
         
-        puts "PSCORE:#{parent.content_score}" if parent.content.include?(DEBUG_CONTENT)
+        puts "PSCORE:#{parent.content_score}" if DEBUG && parent.content.include?(DEBUG_CONTENT)
         
         if parent.content_score > 0    
           unless content_containers.include?(parent)
@@ -106,7 +106,7 @@ module Dragnet
           child.remove if child.content_score && child.content_score <= 0
         end
         
-        container.xpath('//a').each do |link|
+        container.css('a').each do |link|
           href = link['href']
           if (href && !href.nil?) || (href && !href.empty?)
             begin
@@ -142,7 +142,7 @@ module Dragnet
       ancestor_klasses, ancestor_ids = keyword_collection_for(element)
       id = parent['id'].downcase rescue nil
       
-      puts "SCORE FIRST:#{score}" if parent.content.include?(DEBUG_CONTENT)
+      puts "SCORE FIRST:#{score}" if DEBUG && parent.content.include?(DEBUG_CONTENT)
       # Two points for every strong keyword
       STRONG_KEYWORDS.each do |keyword|        
         score += 1 if klasses =~ /#{keyword}/i
@@ -151,7 +151,7 @@ module Dragnet
         # score += parent.xpath('//p').size
       end
       
-      puts "SCORE STRONG:#{score}" if parent.content.include?(DEBUG_CONTENT)
+      puts "SCORE STRONG:#{score}" if DEBUG && parent.content.include?(DEBUG_CONTENT)
       # One point for every medium keyword
       if score >= 1
         MEDIUM_KEYWORDS.each do |keyword|
@@ -163,7 +163,7 @@ module Dragnet
         end
       end
       
-      puts "SCORE MEDIUM:#{score}" if parent.content.include?(DEBUG_CONTENT)
+      puts "SCORE MEDIUM:#{score}" if DEBUG && parent.content.include?(DEBUG_CONTENT)
       
       #Nuke the score for any bad or ignored keywords
       IGNORE_KEYWORDS.each do |keyword|
@@ -190,7 +190,7 @@ module Dragnet
         # end
       end
       score += 1 if element.name == 'p' && element.word_count > CONTROL_SCORE       
-      puts "SCORE FINAL:#{score}" if parent.content.include?(DEBUG_CONTENT)
+      puts "SCORE FINAL:#{score}" if DEBUG && parent.content.include?(DEBUG_CONTENT)
          
       @high_score = score if score > @high_score
       score

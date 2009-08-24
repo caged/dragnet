@@ -9,9 +9,6 @@ require 'tidy'
 require 'uri'
 require 'hpricot'
 
-module Dragnet
-  VERSION = '0.3.0' unless defined?(Dragnet::VERSION)
-end
 
 # template = <<-TEMPLATE
 # <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
