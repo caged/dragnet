@@ -7,7 +7,7 @@ class DragnetTest < Test::Unit::TestCase
     end
     
     should "extract only links within the content area" do
-      
+      @net.links.size.should == 10
     end
   end
 end
