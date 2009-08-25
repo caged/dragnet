@@ -90,6 +90,51 @@ module Dragnet
       param
     )
     
+    INVALID_LINK_HOSTS = [
+      'del.icio.us', 
+      'digg.com', 
+      'technorati.com', 
+      'stumbleupon.com'
+    ]
+    
+    INVALID_LINK_TEXT = [
+      'email',
+      'e-mail',
+      'email article',
+      'reddit',
+      'retweet',
+      'digg',
+      'digg it',
+      'del.icio.us',
+      'technorati',
+      'stumble',
+      'stumbleUpon',
+      'myspace',
+      'report abuse',
+      'print',
+      'print article',
+      'printable version',
+      'permalink',
+      'trackbacks',
+      'trackback',
+      'read more',
+      'facebook',
+      'yahoo buzz!',
+      'yahoo! buzz',
+      'mixx',
+      'terms of service',
+      'your ad here',
+      'sphere it!',
+      'share this',
+      'share',
+      '« previous',
+      'next comments »',
+      'links to this article',
+      'my yahoo!',
+      'google reader',
+      'rss'
+    ]
+    
     CONTROL_SCORE = 20
     
     DEBUG = false
@@ -144,7 +189,7 @@ module Dragnet
       # lets try another method
       empty = paragraphs.collect {|c| c.content.strip}.join('').empty?
       if paragraphs.size == 0 || empty
-        paragraphs = @doc.csss('div').to_a
+        paragraphs = @doc.css('div').to_a
       end
       
       paragraphs + @doc.css('blockquote').to_a
@@ -276,8 +321,11 @@ module Dragnet
           if (href && !href.nil?) || (href && !href.empty?)
             begin
               url = URI.parse(href)
-              unless url.host.nil?
-                links << {:text => link.content, :href => href}
+              text = link.content.strip.downcase.gsub(/\n+/, ' ')
+              unless url.host.nil? || 
+                INVALID_LINK_HOSTS.include?(url.host.downcase.to_s) || 
+                INVALID_LINK_TEXT.include?(text) || text.empty?
+                  links << {:text => link.content.strip, :href => href}
               end
             rescue 
               

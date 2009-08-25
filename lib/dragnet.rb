@@ -7,6 +7,8 @@ require 'tidy'
 require 'uri'
 require 'mofo'
 
+$:.unshift(File.dirname(__FILE__))
+
 require 'dragnet/dragger'
 
 #Dragnet::Dragger::DEBUG = true
