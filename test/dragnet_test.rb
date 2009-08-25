@@ -21,9 +21,13 @@ class DragnetTest < Test::Unit::TestCase
       @net = Dragnet::Dragger.drag!(sample_with_embedded_links)
     end
     
+    should "ignore invalid content such as comments, etc. even if it shares the same parent as valid article content" do
+      assert_match(/Associated\sPress$/i, @net.content)
+    end
+    
     should "extract links from content" do
-      assert_equal(@net.links.first[:text], "Polling done earlier this week by NBC")
-      assert_equal(@net.links.last[:text], "John Ensign")
+      assert_equal("Polling done earlier this week by NBC", @net.links.first[:text])
+      assert_equal("John Ensign", @net.links.last[:text])
     end
     
     should "extract only links within the content area" do

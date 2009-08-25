@@ -8,13 +8,88 @@ end
 
 module Dragnet
   class Dragger
-    STRONG_KEYWORDS = %w(blog article body content entry hentry post story text post-entry 
-                        post-body entry-content blogpost entry-body page-post postcontent pbody article-text)
-    MEDIUM_KEYWORDS = %w(area container inner main story)
-    IGNORE_KEYWORDS = %w(captcha classified comment footer footnote listing menu module 
-                        nav navbar sidebar sbar sponsor tab toolbar tools trackback widget trail
-                        toolbox reply comnt addstrip comments)
-    INVALID_ELEMENTS = %w(form link head object iframe h1 script style embed param)
+    # Keywords known to commonly contain readable content
+    STRONG_KEYWORDS = %w(
+      blog 
+      article 
+      body 
+      content 
+      entry 
+      hentry 
+      post 
+      story 
+      text 
+      post-entry 
+      post-body 
+      entry-content 
+      blogpost 
+      entry-body 
+      page-post 
+      postcontent 
+      pbody 
+      article-text 
+      blogText
+    )
+    
+    # Higher level containers known to contain content further down the heirarchy
+    MEDIUM_KEYWORDS = %w(
+      area 
+      container 
+      inner 
+      main 
+      story
+    )
+    
+    # Keywords known to contain unwanted content
+    IGNORE_KEYWORDS = %w(
+      captcha 
+      classified 
+      comment 
+      comments 
+      commentText
+      commentwrapper
+      comnt 
+      userComments
+      footer 
+      footnote 
+      listing 
+      menu 
+      module 
+      nav 
+      navbar 
+      sidebar 
+      sbar 
+      sponsor 
+      tab 
+      toolbar 
+      tools 
+      trackback 
+      widget 
+      trail
+      toolbox 
+      reply 
+      addstrip
+      stryTools 
+      socialTools 
+      relatedMedia 
+      related
+    )
+    
+    # Elements that we don't want to attempt to parse for content.
+    # These elements are removed before parsing.
+    INVALID_ELEMENTS = %w(
+      form 
+      link 
+      head 
+      object 
+      iframe 
+      h1 
+      script 
+      style 
+      embed 
+      param
+    )
+    
     CONTROL_SCORE = 20
     
     DEBUG = false
@@ -82,7 +157,7 @@ module Dragnet
         parent.content_score = 0 if parent.content_score.nil?
         parent.content_score = build_score(parent, par)
         
-        puts "PSCORE:#{parent.content_score}" if DEBUG && parent.content.include?(DEBUG_CONTENT)
+        #puts "PSCORE:#{parent.content_score}" if DEBUG && parent.content.include?(DEBUG_CONTENT)
         
         if parent.content_score > 0    
           unless content_containers.include?(parent)
@@ -100,6 +175,7 @@ module Dragnet
         ((@high_score > CONTROL_SCORE) && (container.content_score < @high_score))
       end
       
+      
       # Remove content elements that are decendants of other content elements     
       if content_containers.size > 1
         content_containers.delete_if do |container|
@@ -109,10 +185,20 @@ module Dragnet
         end
       end      
       
-      # Remove all content elements with negative values
+      # Remove all content elements whose children are all negative or 0 values.
+      # Remove all children with negative or zero values
       content_containers.each do |container|
-        container.children.each do |child|
-          child.remove if child.content_score && child.content_score <= 0
+        # pp "CHILDREN:#{container.children.size}"
+        # pp "WILDCARD:#{container.css('*').size}"
+        if container.children.all? {|c| c.content_score && c.content_score <= 0}
+          container.remove
+        else
+          container.css('*').each do |child|
+            pp child.content_score if DEBUG and child.content.include?(DEBUG_CONTENT)
+            if child.content_score && child.content_score <= 0
+              child.remove 
+            end
+          end
         end
         
         # Extract all the links from what we assume is the content containers
@@ -135,58 +221,41 @@ module Dragnet
     def build_score(parent, element)
       ancestors = parent.ancestors
       score = parent.content_score
+      element_score = element.content_score || 0
+      
       klasses = parent['class'].downcase rescue ''
       ancestor_klasses, ancestor_ids = keyword_collection_for(element)
       id = parent['id'].downcase rescue nil
       
-      puts "SCORE FIRST:#{score}" if DEBUG && parent.content.include?(DEBUG_CONTENT)
+      puts "SCORE FIRST:#{score}" if DEBUG && element.content.include?(DEBUG_CONTENT)
       # Two points for every strong keyword
       STRONG_KEYWORDS.each do |keyword|        
         score += 1 if klasses =~ /#{keyword}/i
         score += 1 if id && id =~ /#{keyword}/i
-        # # For every paragraph sibling, up the score.
-        #score += parent.css('p').size
       end
       
-      puts "SCORE STRONG:#{score}" if DEBUG && parent.content.include?(DEBUG_CONTENT)
-      # One point for every medium keyword
+      puts "SCORE STRONG:#{score}" if DEBUG && element.content.include?(DEBUG_CONTENT)
+      
+      # 1/2 point for every medium keyword
       if score >= 1
         MEDIUM_KEYWORDS.each do |keyword|
-          score += 1 if klasses =~ /#{keyword}/i
-          score += 1 if id && id =~ /#{keyword}/i
-        
-          # # For every paragraph sibling, up the score.
-          #score += parent.xpath('//p').size
+          score += 0.5 if klasses =~ /#{keyword}/i
+          score += 0.5 if id && id =~ /#{keyword}/i
         end
       end
       
-      puts "SCORE MEDIUM:#{score}" if DEBUG && parent.content.include?(DEBUG_CONTENT)
+      puts "SCORE MEDIUM:#{score}" if DEBUG && element.content.include?(DEBUG_CONTENT)
       
       #Nuke the score for any bad or ignored keywords
       IGNORE_KEYWORDS.each do |keyword|
         score -= (CONTROL_SCORE * 0.3) if klasses =~ /#{keyword}/i
         score -= (CONTROL_SCORE * 0.3) if id && id =~ /#{keyword}/i        
-        # score -= CONTROL_SCORE if ancestor_ids.include?(keyword)
-        # score -= CONTROL_SCORE if ancestor_klasses.include?(keyword)
-        
-        # There wasn't an exact match, but we might have something like 
-        # comment-1234 we'll take off half the control score
-        # all_keywords = (klasses + ancestor_klasses + ancestor_ids)
-        # all_keywords.each do |klass|
-        #   #puts "#{klass} includes #{keyword}" if klass.include?(keyword) && element.content.include?('balance all accounts')
-        #   score -= (CONTROL_SCORE / 2) if klass.include?(keyword)
-        # end
-        
-        # unless ancestor_ids.include?(keyword) || ancestor_klasses.include?(keyword) || 
-        #   klasses.include?(keyword) || (id && id.include?(keyword))
-        #     if element.name == 'p' && element.word_count >= CONTROL_SCORE && !incremented_for_p
-        #       score += 1;
-        #       incremented_for_p = true;
-        #     end
-        # end
+        score -= 1 if ancestor_ids.join(' '). =~ /#{keyword}/i
+        score -= 1 if ancestor_klasses.join(' ') =~ /#{keyword}/i
       end
+            
       score += 1 if element.name == 'p' && element.word_count > CONTROL_SCORE       
-      puts "SCORE FINAL:#{score}" if DEBUG && parent.content.include?(DEBUG_CONTENT)
+      puts "SCORE FINAL:#{score}" if DEBUG && element.content.include?(DEBUG_CONTENT)
          
       @high_score = score if score > @high_score
       score
