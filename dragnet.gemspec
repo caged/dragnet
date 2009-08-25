@@ -10,8 +10,8 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Caged"]
   s.date = %q{2009-08-23}
-  s.description = %q{Given a url Dragnet will attempt to analyze and extract the intended readable content and embedded links from a page}
-  s.email = %q{justin@activereload.net}
+  s.description = %q{Given a URL Dragnet will attempt to analyze and extract the intended readable content and embedded links from a page}
+  s.email = %q{justin@labratrevenge.com}
   s.extra_rdoc_files = [
     "LICENSE",
      "README.rdoc"
@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
     ".document",
      ".gitignore",
      "LICENSE",
-     "README.rdoc",
+     "README.markdown",
      "Rakefile",
      "VERSION",
      "lib/dragnet.rb",

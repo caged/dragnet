@@ -26,26 +26,26 @@ A basic overview of what this library does:
 ####Notable Troublesome URLS
 [x] Readability doesn't parse correctly : [-] Readability parses correctly
 
-* [-] http://www.politico.com/blogs/glennthrush/0809/Remains_of_the_day_August_24_2009.html 
+* [-] [http://www.politico.com/blogs/glennthrush/0809/Remains_of_the_day_August_24_2009.html](http://www.politico.com/blogs/glennthrush/0809/Remains_of_the_day_August_24_2009.html)
       Short content, invalid lines.
-* [-] http://www.tulsaworld.com/news/article.aspx?subjectid=298&articleid=20090824_298_0_TheTul317502&rss_lnk=1
+* [-] [http://www.tulsaworld.com/news/article.aspx?subjectid=298&articleid=20090824_298_0_TheTul317502&rss_lnk=1](http://www.tulsaworld.com/news/article.aspx?subjectid=298&articleid=20090824_298_0_TheTul317502&rss_lnk=1)
       No content paragraphs, uses spans and double <br /><br /> to signify paragraphs.
-* [-] http://article.nationalreview.com/?q=YTMxNGQyNmYyNjljYmE0NDVhZTdlMjlkZTM1Y2NiOTU=
+* [-] [http://article.nationalreview.com/?q=YTMxNGQyNmYyNjljYmE0NDVhZTdlMjlkZTM1Y2NiOTU=](http://article.nationalreview.com/?q=YTMxNGQyNmYyNjljYmE0NDVhZTdlMjlkZTM1Y2NiOTU=)
       Multiple page article
-* [x] http://politicalwire.com/archives/2009/08/24/bonus_quote_of_the_day.html
+* [x] [http://politicalwire.com/archives/2009/08/24/bonus_quote_of_the_day.html](http://politicalwire.com/archives/2009/08/24/bonus_quote_of_the_day.html)
       Tiny amount of content with no paragraphs and a huge footer with paragraph content.
-* [x] http://briefingroom.thehill.com/2009/08/24/doctor-to-be-named-in-jackson-homicide-donated-to-republican-party-in-2004/
+* [x] [http://briefingroom.thehill.com/2009/08/24/doctor-to-be-named-in-jackson-homicide-donated-to-republican-party-in-2004/](http://briefingroom.thehill.com/2009/08/24/doctor-to-be-named-in-jackson-homicide-donated-to-republican-party-in-2004/)
       Paragraphs embedded in spans
-* [-] http://www.nytimes.com/2009/08/25/us/politics/25detain.html?_r=1&partner=rss&emc=rss
+* [-] [http://www.nytimes.com/2009/08/25/us/politics/25detain.html?_r=1&partner=rss&emc=rss](http://www.nytimes.com/2009/08/25/us/politics/25detain.html?_r=1&partner=rss&emc=rss)
       Not sure what the problem is here.  It doesn't look like anything should be wrong here 
       at first glance.
-* [-] http://www.weeklystandard.com/weblogs/TWSFP/2009/08/kristol_gratitude_obamastyle.asp
+* [-] [http://www.weeklystandard.com/weblogs/TWSFP/2009/08/kristol_gratitude_obamastyle.asp](http://www.weeklystandard.com/weblogs/TWSFP/2009/08/kristol_gratitude_obamastyle.asp)
       Everything looks fine.  Not sure why we're getting a blank block of content back
-* [x] http://www.cbsnews.com/stories/2009/08/24/entertainment/michaeljackson/main5262822.shtml
+* [x] [http://www.cbsnews.com/stories/2009/08/24/entertainment/michaeljackson/main5262822.shtml](http://www.cbsnews.com/stories/2009/08/24/entertainment/michaeljackson/main5262822.shtml)
       Comments are included as readable content
-* [x] http://www.whitehouse.gov/blog/Diligence-on-H1N1/
+* [x] [http://www.whitehouse.gov/blog/Diligence-on-H1N1/](http://www.whitehouse.gov/blog/Diligence-on-H1N1/)
       Uses divs for content, but contains paragraphs elsewhere.
-* [-] http://www.msnbc.msn.com/id/32518842/ns/meet_the_press/
+* [-] [http://www.msnbc.msn.com/id/32518842/ns/meet_the_press/](http://www.msnbc.msn.com/id/32518842/ns/meet_the_press/)
       Parsing a bunch of unwanted, non readable content. I assume because it shares the same
       parent as the other content.
       
