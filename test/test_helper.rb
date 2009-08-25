@@ -10,7 +10,7 @@ def load_data(name)
   File.read(File.join(File.dirname(__FILE__), 'data', "#{name}.html"))
 end
 
-def sample_with_good_structure
+def sample_with_microformat
   load_data('public-policy-polling')
 end
 

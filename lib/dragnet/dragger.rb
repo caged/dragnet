@@ -18,7 +18,7 @@ module Dragnet
     CONTROL_SCORE = 20
     
     DEBUG = false
-    DEBUG_CONTENT = ''
+    DEBUG_CONTENT = 'Report abuse'
     
     attr_reader :content
     attr_reader :links
@@ -52,6 +52,7 @@ module Dragnet
       # First try to extract the content as a microformat
       @content = parse_as_microformat(@doc)
       unless @content.nil?
+        @content = cleanup_content(@content)
         @links = extract_links_from_content(@content)
         return
       end
@@ -116,13 +117,20 @@ module Dragnet
         
         # Extract all the links from what we assume is the content containers
         @links.concat(extract_links_from_content(container))
-        
-        cleaned_content = container.content.gsub(/[\r\n\t]+/i, ' ')
-        content << cleaned_content.gsub(/\s{3,}/, '').gsub(/<\/?[^>]*>/, ' ').gsub(']]>', ' ').gsub(/↓|—/, ' ')
+        content << cleanup_content(container.content)
       end
       
       @content = content.join(' ')
     end  
+    
+    def cleanup_content(content)
+      content.gsub!(/[\r\n\t]+/i, ' ')
+      content.gsub!(/\s{3,}/, '')
+      content.gsub!(/<\/?[^>]*>/, ' ')
+      content.gsub!('<![CDATA[', '')
+      content.gsub!(']]>', ' ')
+      content.strip
+    end
     
     def build_score(parent, element)
       ancestors = parent.ancestors
