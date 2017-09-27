@@ -1,15 +1,15 @@
-#dragnet
+# dragnet
 This is still very experimental.  
 
 
-##Extracting readable content from HTML markup
+## Extracting readable content from HTML markup
 This was inspired by the [Readability](http://lab.arc90.com/experiments/readability/) bookmarklet. 
 The goal is to extract meaningful, readable content from HTML.  This will attempt to 
 extract content from sources such as blogs articles and publications.  It will also attempt to 
 extract links embedded within the readable content.
 
 
-##Approach
+## Approach
 Given the vast nasty of HTML tag soup regurgitated by some blog engines, it's very 
 hard to get fully clean content from a page on any kind of consistent basis.  What works for one 
 chunk of HTML, might not work for other chunks of HTML.  We want to attempt to get as clean of 
@@ -23,7 +23,7 @@ A basic overview of what this library does:
    some common keywords and word count.
 
   
-####Notable Troublesome URLS
+#### Notable Troublesome URLS
 [x] Readability doesn't parse correctly : [-] Readability parses correctly
 
 * [-] [http://www.politico.com/blogs/glennthrush/0809/Remains_of_the_day_August_24_2009.html](http://www.politico.com/blogs/glennthrush/0809/Remains_of_the_day_August_24_2009.html)
@@ -49,18 +49,18 @@ A basic overview of what this library does:
       Parsing a bunch of unwanted, non readable content. I assume because it shares the same
       parent as the other content.
       
-##TODO
+## TODO
 * Parsing multiple page articles
 * Consider searching for a 'print' link on the page and use this content instead.  This content 
   tends to be a cleaner version of the original and it also tends to bypass the multiple page 
   article issue.
   
-##Note on Patches/Pull Requests
+## Note on Patches/Pull Requests
 * Fork the project.
 * Make your feature addition or bug fix.
 * Add tests for it. This is important so I don't break it in a future version unintentionally.
 * Send me a pull request. Bonus points for topic branches.
 
 
-##Copyright
+## Copyright
 Copyright (c) 2009 Justin Palmer. See LICENSE for details.
